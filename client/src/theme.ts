@@ -1,10 +1,14 @@
+import { orange, red } from "@mui/material/colors";
 import { createTheme } from "@mui/material/styles";
-import { blue, pink } from "@mui/material/colors";
 
 const theme = createTheme({
     palette: {
-        primary: blue,
-        secondary: pink,
+        primary: red,
+        secondary: orange,
+    },
+
+    typography: {
+        fontFamily: '"Poppins", sans-serif',
     },
 });
 

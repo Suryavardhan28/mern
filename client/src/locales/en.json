@@ -1,0 +1,16 @@
+{
+    "login": {
+        "companyname": "Susha Logistics",
+        "signup": {
+            "title": "Sign Up"
+        },
+        "signin": {
+            "title": "Sign In",
+            "username": "Username",
+            "password": "Password"
+        }
+    },
+    "home": {
+        "dashboard": "Dashboard"
+    }
+}

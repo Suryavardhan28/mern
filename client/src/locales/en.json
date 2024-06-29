@@ -1,14 +1,19 @@
 {
+    "companyName": "Susha Logistics",
     "login": {
-        "companyname": "Susha Logistics",
         "signup": {
-            "title": "Sign Up"
+            "firstName": "Firstname",
+            "lastName": "Lastname",
+            "title": "Sign Up",
+            "organization": "Organization Name",
+            "contact": "Contact"
         },
         "signin": {
-            "title": "Sign In",
-            "username": "Username",
-            "password": "Password"
-        }
+            "title": "Sign In"
+        },
+        "button": "Start Shipping",
+        "email": "Email",
+        "password": "Password"
     },
     "home": {
         "dashboard": "Dashboard"

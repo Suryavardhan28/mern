@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    contact: {
+        type: String,
+        required: true,
+    },
     createdDate: {
         type: Date,
         default: Date.now,

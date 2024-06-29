@@ -37,7 +37,14 @@ export const signin = async (req, res) => {
             return res.status(400).json({ error: "Invalid password" });
         }
         const token = generateToken(user);
-        res.status(200).json({ token });
+        res.status(200).json({
+            token,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            organization: user.organization,
+            contact: user.contact,
+        });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

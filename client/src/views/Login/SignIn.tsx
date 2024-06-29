@@ -38,7 +38,7 @@ const SignIn: React.FC = () => {
             sx={{ margin: "30%" }}
         >
             <form onSubmit={formik.handleSubmit}>
-                <Typography variant="h3">{t("login.signin.title")}</Typography>
+                <Typography variant="h3">{t("login.signIn.title")}</Typography>
                 <TextField
                     id="email"
                     name="email"
@@ -82,6 +82,8 @@ const SignIn: React.FC = () => {
                     <Typography>{t("login.button")}</Typography>
                 </Button>
             </form>
+
+            <Typography>{t("login.signIn.create")}</Typography>
         </Grid>
     );
 };

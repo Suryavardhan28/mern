@@ -1,14 +1,14 @@
 {
     "companyName": "Susha Logistics",
     "login": {
-        "signup": {
+        "singUp": {
             "firstName": "Firstname",
             "lastName": "Lastname",
             "title": "Sign Up",
             "organization": "Organization Name",
             "contact": "Contact"
         },
-        "signin": {
+        "signIn": {
             "title": "Sign In"
         },
         "button": "Start Shipping",

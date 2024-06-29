@@ -20,7 +20,7 @@ mongoose
     .catch((err) => console.error("MongoDB connection error:", err));
 
 // Routes
-app.use("/api/users", require("./routes/users"));
+app.use("/api/users", require("./routes/authRoutes"));
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

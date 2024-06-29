@@ -50,12 +50,12 @@ const SignUp: React.FC = () => {
             sx={{ margin: "0 30%" }}
         >
             <form onSubmit={formik.handleSubmit}>
-                <Typography variant="h3">{t("login.signup.title")}</Typography>
+                <Typography variant="h3">{t("login.singUp.title")}</Typography>
                 <TextField
                     id="firstName"
                     name="firstName"
                     margin="normal"
-                    label={t("login.signup.firstName")}
+                    label={t("login.singUp.firstName")}
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -73,7 +73,7 @@ const SignUp: React.FC = () => {
                     id="lastName"
                     name="lastName"
                     margin="normal"
-                    label={t("login.signup.lastName")}
+                    label={t("login.singUp.lastName")}
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -123,7 +123,7 @@ const SignUp: React.FC = () => {
                     id="organization"
                     name="organization"
                     margin="normal"
-                    label={t("login.signup.organization")}
+                    label={t("login.singUp.organization")}
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -143,7 +143,7 @@ const SignUp: React.FC = () => {
                     id="contact"
                     name="contact"
                     margin="normal"
-                    label={t("login.signup.contact")}
+                    label={t("login.singUp.contact")}
                     variant="outlined"
                     size="small"
                     fullWidth

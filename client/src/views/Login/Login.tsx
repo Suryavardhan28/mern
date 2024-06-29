@@ -31,7 +31,6 @@ const Login: React.FC = () => {
             </Grid>
             <Grid container item>
                 <SignIn />
-                {/* <SignUp /> */}
             </Grid>
         </Grid>
     );

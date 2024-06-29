@@ -1,23 +1,17 @@
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const config = require("../config/config");
+import { hash as _hash, compare, genSalt } from "bcrypt";
+import jwt from "jsonwebtoken";
+import { jwtSecretKey, saltRounds } from "../config/config.js";
 
-const hashPassword = async (password) => {
-    const salt = await bcrypt.genSalt(config.saltRounds);
-    return bcrypt.hash(password, salt);
+export const hashPassword = async (password) => {
+    const salt = await genSalt(saltRounds);
+    return _hash(password, salt);
 };
 
-const comparePassword = async (password, hash) => {
-    return bcrypt.compare(password, hash);
+export const comparePassword = async (password, hash) => {
+    return compare(password, hash);
 };
 
-const generateToken = (user) => {
+export const generateToken = (user) => {
     const payload = { userId: user._id, email: user.email };
-    return jwt.sign(payload, config.jwtSecretKey, { expiresIn: "1h" });
-};
-
-module.exports = {
-    hashPassword,
-    comparePassword,
-    generateToken,
+    return jwt.sign(payload, jwtSecretKey, { expiresIn: "1h" });
 };

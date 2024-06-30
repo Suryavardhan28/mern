@@ -1,6 +1,6 @@
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import LoadingButton from "@mui/lab/LoadingButton";
 import {
-    Button,
     Grid,
     Link as MuiLink,
     TextField,
@@ -8,13 +8,13 @@ import {
     useTheme,
 } from "@mui/material";
 import { useFormik } from "formik";
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import Logo from "../../assets/svg/Logo";
-import { login } from "../../reducers/authSlice/actions";
+import { login } from "../../reducers/userSlice/actions";
 import { SignInFormValues } from "./utils";
 
 const validationSchema = yup.object({
@@ -30,16 +30,28 @@ const SignIn: React.FC = () => {
     const { t } = useTranslation();
     const theme = useTheme();
     const dispatch = useDispatch() as any;
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
     const formik = useFormik({
         initialValues: {
             email: "",
             password: "",
         },
         validationSchema: validationSchema,
-        onSubmit: (values: SignInFormValues) => {
-            dispatch(login(values));
+        onSubmit: async (values: SignInFormValues) => {
+            setLoading(true);
+            dispatch(login(values))
+                .then(() => {
+                    setLoading(false);
+                    navigate("/home");
+                })
+                .catch((error: any) => {
+                    setLoading(false);
+                    console.error("Error logging in user:", error);
+                });
         },
     });
+
     return (
         <Grid
             sx={{ height: "100vh" }}
@@ -111,16 +123,17 @@ const SignIn: React.FC = () => {
                                 formik.errors.password
                             }
                         />
-                        <Button
+                        <LoadingButton
                             type="submit"
                             variant="contained"
                             size="medium"
                             endIcon={<LocalShippingIcon />}
                             fullWidth
+                            loading={loading}
                             sx={{ margin: "20px 0" }}
                         >
                             <Typography>{t("login.button")}</Typography>
-                        </Button>
+                        </LoadingButton>
                     </form>
                     <Typography textAlign="center">
                         {t("login.signIn.createAccount")}

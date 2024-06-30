@@ -1,25 +1,28 @@
-import * as React from "react";
+import AccountCircle from "@mui/icons-material/AccountCircle";
+import MenuIcon from "@mui/icons-material/Menu";
+import { Tooltip } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
-import AccountCircle from "@mui/icons-material/AccountCircle";
-import Switch from "@mui/material/Switch";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import FormGroup from "@mui/material/FormGroup";
-import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Toolbar from "@mui/material/Toolbar";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../reducers";
+import { logout } from "../reducers/userSlice/actions";
+import UpdatePassword from "./user/UpdatePassword";
+import UpdateProfile from "./user/UpdateProfile";
 
 const Header: React.FC = () => {
-    const [auth, setAuth] = React.useState(true);
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const { t } = useTranslation();
+    const dispatch = useDispatch() as any;
 
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setAuth(event.target.checked);
-    };
-
+    const user = useSelector((state: RootState) => state.user.userInfo);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+    const [profileModalOpen, setProfileModalOpen] = useState(false);
     const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
     };
@@ -27,21 +30,25 @@ const Header: React.FC = () => {
     const handleClose = () => {
         setAnchorEl(null);
     };
+    const handleProfileOpen = () => {
+        setProfileModalOpen(true);
+    };
+    const handleProfileClose = () => {
+        setProfileModalOpen(false);
+    };
+    const handlePasswordOpen = () => {
+        setPasswordModalOpen(true);
+    };
+    const handlePasswordClose = () => {
+        setPasswordModalOpen(false);
+    };
+
+    const handleLogout = () => {
+        dispatch(logout());
+    };
 
     return (
         <Box sx={{ flexGrow: 1 }}>
-            <FormGroup>
-                <FormControlLabel
-                    control={
-                        <Switch
-                            checked={auth}
-                            onChange={handleChange}
-                            aria-label="login switch"
-                        />
-                    }
-                    label={auth ? "Logout" : "Login"}
-                />
-            </FormGroup>
             <AppBar position="static">
                 <Toolbar>
                     <IconButton
@@ -53,30 +60,25 @@ const Header: React.FC = () => {
                     >
                         <MenuIcon />
                     </IconButton>
-                    <Typography
-                        variant="h6"
-                        component="div"
-                        sx={{ flexGrow: 1 }}
-                    >
-                        Photos
-                    </Typography>
-                    {auth && (
+                    <Box sx={{ flexGrow: "1" }} />
+                    {user && (
                         <div>
-                            <IconButton
-                                size="large"
-                                aria-label="account of current user"
-                                aria-controls="menu-appbar"
-                                aria-haspopup="true"
-                                onClick={handleMenu}
-                                color="inherit"
-                            >
-                                <AccountCircle />
-                            </IconButton>
+                            <Tooltip title={user.firstName}>
+                                <IconButton
+                                    size="large"
+                                    aria-label="account of current user"
+                                    aria-controls="menu-appbar"
+                                    aria-haspopup="true"
+                                    onClick={handleMenu}
+                                    color="inherit"
+                                >
+                                    <AccountCircle />
+                                </IconButton>
+                            </Tooltip>
                             <Menu
-                                id="menu-appbar"
                                 anchorEl={anchorEl}
                                 anchorOrigin={{
-                                    vertical: "top",
+                                    vertical: "bottom",
                                     horizontal: "right",
                                 }}
                                 keepMounted
@@ -87,17 +89,28 @@ const Header: React.FC = () => {
                                 open={Boolean(anchorEl)}
                                 onClose={handleClose}
                             >
-                                <MenuItem onClick={handleClose}>
-                                    Profile
+                                <MenuItem onClick={handleProfileOpen}>
+                                    {t("header.account")}
                                 </MenuItem>
-                                <MenuItem onClick={handleClose}>
-                                    My account
+                                <MenuItem onClick={handlePasswordOpen}>
+                                    {t("header.password.title")}
+                                </MenuItem>
+                                <MenuItem onClick={handleLogout}>
+                                    {t("header.logout")}
                                 </MenuItem>
                             </Menu>
                         </div>
                     )}
                 </Toolbar>
             </AppBar>
+            <UpdateProfile
+                open={profileModalOpen}
+                handleClose={handleProfileClose}
+            />
+            <UpdatePassword
+                open={passwordModalOpen}
+                handleClose={handlePasswordClose}
+            />
         </Box>
     );
 };

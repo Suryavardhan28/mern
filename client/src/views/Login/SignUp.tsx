@@ -1,19 +1,20 @@
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import { LoadingButton } from "@mui/lab";
 import {
-    Button,
     Grid,
     Link as MuiLink,
     TextField,
     Typography,
     useTheme,
 } from "@mui/material";
-import axios from "axios";
 import { useFormik } from "formik";
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import Logo from "../../assets/svg/Logo";
+import { signUp } from "../../reducers/userSlice/actions";
 import { SignUpFormValues } from "./utils";
 
 const validationSchema = yup.object({
@@ -35,6 +36,9 @@ const validationSchema = yup.object({
 const SignUp: React.FC = () => {
     const { t } = useTranslation();
     const theme = useTheme();
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const dispatch = useDispatch() as any;
     const formik = useFormik({
         initialValues: {
             firstName: "",
@@ -46,12 +50,16 @@ const SignUp: React.FC = () => {
         },
         validationSchema: validationSchema,
         onSubmit: async (values: SignUpFormValues) => {
-            try {
-                const response = await axios.post("/api/users/signup", values);
-                console.log("User registered successfully:", response.data);
-            } catch (error) {
-                console.error("Error registering user:", error);
-            }
+            setLoading(true);
+            dispatch(signUp(values))
+                .then(() => {
+                    setLoading(false);
+                    navigate("/");
+                })
+                .catch((error: any) => {
+                    setLoading(false);
+                    console.error("Error signing up user:", error);
+                });
         },
     });
 
@@ -203,16 +211,17 @@ const SignUp: React.FC = () => {
                                 formik.touched.contact && formik.errors.contact
                             }
                         />
-                        <Button
+                        <LoadingButton
                             type="submit"
                             variant="contained"
                             size="medium"
                             endIcon={<LocalShippingIcon />}
                             fullWidth
+                            loading={loading}
                             sx={{ margin: "20px 0" }}
                         >
                             <Typography>{t("login.button")}</Typography>
-                        </Button>
+                        </LoadingButton>
                     </form>
                     <Typography textAlign="center">
                         {t("login.signUp.existingAccount")}

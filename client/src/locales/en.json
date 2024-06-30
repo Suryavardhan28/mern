@@ -19,5 +19,18 @@
     },
     "home": {
         "dashboard": "Dashboard"
+    },
+    "header": {
+        "account": "Account",
+        "password": {
+            "title": "Change password",
+            "currentPassword": "Current password",
+            "newPassword": "New password",
+            "confirmPassword": "Re-enter new password",
+            "update": "Update Password"
+        },
+        "logout": "Logout",
+        "myAccount": "My Account",
+        "updateDetails": "Update Details"
     }
 }

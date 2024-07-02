@@ -7,16 +7,12 @@ import { localStorageItemKey } from "../../config";
 import { SignInFormValues, SignUpFormValues } from "../../views/login/utils";
 import { USER_INFO_ADD, USER_INFO_REMOVE } from "./actionTypes";
 
-export interface UserInfo {
+export interface UserInfoToken {
     token: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    organization: string;
-    contact: string;
+    userInfo: UserInfo;
 }
 
-export interface ProfileInfo {
+export interface UserInfo {
     firstName: string;
     lastName: string;
     email: string;
@@ -35,26 +31,6 @@ interface UserInfoRemoveAction {
 
 export type AuthActionTypes = UserInfoAddAction | UserInfoRemoveAction;
 
-export const login = (loginInfo: SignInFormValues) => async (dispatch: any) => {
-    const response = await axiosInstance.post("/api/users/signin", loginInfo);
-    if (response.status === 200) {
-        const userInfo: UserInfo = response.data;
-        dispatch(addUserInfo(userInfo));
-        localStorage.setItem(localStorageItemKey, JSON.stringify(userInfo));
-    } else {
-        dispatch(logout());
-    }
-};
-
-export const signUp = (userData: SignUpFormValues) => async () => {
-    const response = await axiosInstance.post("/api/users/signup", userData);
-    if (response.status === 201) {
-        console.log(response.data);
-    } else {
-        console.log("Signup failed");
-    }
-};
-
 export const addUserInfo = (userInfo: UserInfo): AuthActionTypes => {
     return {
         type: USER_INFO_ADD,
@@ -69,33 +45,55 @@ export const logout = (): AuthActionTypes => {
     };
 };
 
+export const login = (loginInfo: SignInFormValues) => async (dispatch: any) => {
+    const response = await axiosInstance.post("/api/user/signin", loginInfo);
+    if (response.status === 200) {
+        const userInfoWithToken: UserInfoToken = response.data;
+        dispatch(addUserInfo(userInfoWithToken.userInfo));
+        localStorage.setItem(localStorageItemKey, userInfoWithToken.token);
+    } else {
+        dispatch(logout());
+    }
+};
+
+export const refresh = () => async (dispatch: any) => {
+    const response = await axiosInstance.get("/api/user/refresh");
+    if (response.status === 200) {
+        const userInfoWithToken: UserInfoToken = response.data;
+        dispatch(addUserInfo(userInfoWithToken.userInfo));
+        localStorage.setItem(localStorageItemKey, userInfoWithToken.token);
+    } else if (response.status === 400) {
+        console.log("User not found");
+        dispatch(logout());
+    } else {
+        console.log("Error refreshing data");
+        dispatch(logout());
+    }
+};
+
+export const signUp = (userData: SignUpFormValues) => async () => {
+    const response = await axiosInstance.post("/api/user/signup", userData);
+    if (response.status === 201) {
+        console.log(response.data);
+    } else {
+        console.log("Signup failed");
+    }
+};
+
 export const updateProfile =
     (updateProfileData: ProfileUpdateValues) => async (dispatch: any) => {
         try {
             const response = await axiosInstance.put(
-                "/api/users/profile",
+                "/api/user/profile",
                 updateProfileData
             );
             if (response.status === 201) {
-                const userInfo: ProfileInfo = response.data;
-                const oldUserInfoData =
-                    localStorage.getItem(localStorageItemKey);
-                if (oldUserInfoData) {
-                    const oldUserInfo = JSON.parse(oldUserInfoData);
-                    const updatedUserInfo: UserInfo = {
-                        ...userInfo,
-                        token: oldUserInfo.token,
-                    };
-                    dispatch(addUserInfo(updatedUserInfo));
-                    localStorage.setItem(
-                        localStorageItemKey,
-                        JSON.stringify(updatedUserInfo)
-                    );
-                } else {
-                    console.error(
-                        "Error retrieving user details from local storage"
-                    );
-                }
+                const userData: UserInfo = response.data;
+                dispatch(addUserInfo(userData));
+            } else {
+                console.error(
+                    "Error retrieving user details from local storage"
+                );
             }
         } catch (error) {
             console.error("Update failed", error);
@@ -106,7 +104,7 @@ export const updatePassword =
     (updatePasswordData: PasswordUpdateValues) => async () => {
         try {
             const response = await axiosInstance.put(
-                "/api/users/password",
+                "/api/user/password",
                 updatePasswordData
             );
             if (response.status === 200) {

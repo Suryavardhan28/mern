@@ -1,1 +1,1 @@
-export const localStorageItemKey = "userInfo";
+export const localStorageItemKey = "token";

@@ -5,12 +5,8 @@ interface UserState {
     userInfo?: UserInfo | null;
 }
 
-const userInfoFromStorage: UserInfo | null = localStorage.getItem("userInfo")
-    ? JSON.parse(localStorage.getItem("userInfo") as string)
-    : null;
-
 const initialState: UserState = {
-    userInfo: userInfoFromStorage,
+    userInfo: null,
 };
 
 const userReducer = (

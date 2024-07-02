@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import User from "../models/User.js";
 import {
     comparePassword,
@@ -9,17 +10,24 @@ export const signUp = async (req, res) => {
     try {
         const { firstName, lastName, email, password, organization, contact } =
             req.body;
-        const hashedPassword = await hashPassword(password);
-        const user = new User({
-            firstName,
-            lastName,
-            email,
-            password: hashedPassword,
-            organization,
-            contact,
-        });
-        await user.save();
-        res.status(201).json({ message: "User registered successfully" });
+        const existingUser = await User.findOne({ email }).exec();
+        if (existingUser) {
+            return res
+                .status(400)
+                .json({ error: "User Account already exists" });
+        } else {
+            const hashedPassword = await hashPassword(password);
+            const user = new User({
+                firstName,
+                lastName,
+                email,
+                password: hashedPassword,
+                organization,
+                contact,
+            });
+            await user.save();
+            res.status(201).json({ message: "User registered successfully" });
+        }
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -30,7 +38,7 @@ export const signIn = async (req, res) => {
         const { email, password } = req.body;
         const user = await User.findOne({ email }).exec();
         if (!user) {
-            return res.status(404).json({ error: "User not found" });
+            return res.status(400).json({ error: "User not found" });
         }
         const isPasswordValid = await comparePassword(password, user.password);
         if (!isPasswordValid) {
@@ -38,26 +46,57 @@ export const signIn = async (req, res) => {
         }
         const token = generateToken(user);
         res.status(200).json({
-            token,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            organization: user.organization,
-            contact: user.contact,
+            token: token,
+            userInfo: {
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                organization: user.organization,
+                contact: user.contact,
+            },
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-export const updateProfile = async (req, res) => {
-    const { email, firstName, lastName, contact } = req.body;
-
+export const refresh = async (req, res) => {
     try {
+        const userObjectIdString = req.auth.userId;
+
+        if (ObjectId.isValid(userObjectIdString)) {
+            const userObjectId = new ObjectId(userObjectIdString);
+            const user = await User.findById(userObjectId).exec();
+            if (!user) {
+                return res.status(400).json({ error: "User not found" });
+            }
+            const token = generateToken(user);
+            res.status(200).json({
+                token: token,
+                userInfo: {
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email,
+                    organization: user.organization,
+                    contact: user.contact,
+                },
+            });
+        } else {
+            return res.status(400).json({ error: "Invalid user objectId" });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const updateProfile = async (req, res) => {
+    try {
+        const { email, firstName, lastName, contact } = req.body;
+
         const user = await User.findOne({ email }).exec();
 
         if (!user) {
-            return res.status(404).json({ error: "User not found" });
+            return res.status(400).json({ error: "User not found" });
         }
 
         user.firstName = firstName || user.firstName;
@@ -79,13 +118,12 @@ export const updateProfile = async (req, res) => {
 };
 
 export const updatePassword = async (req, res) => {
-    const { email, password, newPassword } = req.body;
-
     try {
-        const user = await User.findOne({ email }).exec();
+        const { id, email, password, newPassword } = req.body;
 
+        const user = await User.findOne({ email }).exec();
         if (!user) {
-            return res.status(404).json({ error: "User not found" });
+            return res.status(400).json({ error: "User not found" });
         }
 
         const isPasswordValid = await comparePassword(password, user.password);

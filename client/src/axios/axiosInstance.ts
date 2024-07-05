@@ -1,5 +1,5 @@
 import axios from "axios";
-import { localStorageItemKey } from "../config";
+import { localStorageItemKey } from "../config/config";
 
 const axiosInstance = axios.create({
     baseURL: process.env.REACT_APP_API_URL,
@@ -16,6 +16,19 @@ axiosInstance.interceptors.request.use(
     },
     (error) => {
         return Promise.reject(error);
+    }
+);
+
+axiosInstance.interceptors.response.use(
+    (response) => {
+        if (response.data.token) {
+            localStorage.setItem(localStorageItemKey, response.data.token);
+            return response.data.userInfo;
+        }
+        return response;
+    },
+    (error) => {
+        return Promise.reject(error.response);
     }
 );
 

@@ -31,6 +31,7 @@ const SignIn: React.FC = () => {
     const theme = useTheme();
     const dispatch = useDispatch() as any;
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
     const navigate = useNavigate();
     const formik = useFormik({
         initialValues: {
@@ -40,15 +41,14 @@ const SignIn: React.FC = () => {
         validationSchema: validationSchema,
         onSubmit: async (values: SignInFormValues) => {
             setLoading(true);
-            dispatch(login(values))
-                .then(() => {
-                    setLoading(false);
-                    navigate("/home");
-                })
-                .catch((error: any) => {
-                    setLoading(false);
-                    console.error("Error logging in user:", error);
-                });
+            try {
+                await dispatch(login(values));
+                navigate("/");
+            } catch (error: any) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
         },
     });
 
@@ -134,6 +134,16 @@ const SignIn: React.FC = () => {
                         >
                             <Typography>{t("login.button")}</Typography>
                         </LoadingButton>
+                        {error && (
+                            <Typography
+                                textAlign="center"
+                                fontSize="15px"
+                                color={theme.palette.error.main}
+                                margin="10px"
+                            >
+                                {error}
+                            </Typography>
+                        )}
                     </form>
                     <Typography textAlign="center">
                         {t("login.signIn.createAccount")}

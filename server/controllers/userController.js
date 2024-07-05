@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import httpStatusCodes from "../config/httpStatusCodes.js";
 import User from "../models/User.js";
 import {
     comparePassword,
@@ -13,8 +14,8 @@ export const signUp = async (req, res) => {
         const existingUser = await User.findOne({ email }).exec();
         if (existingUser) {
             return res
-                .status(400)
-                .json({ error: "User Account already exists" });
+                .status(httpStatusCodes.FORBIDDEN)
+                .json({ message: "User Account already exists" });
         } else {
             const hashedPassword = await hashPassword(password);
             const user = new User({
@@ -26,10 +27,14 @@ export const signUp = async (req, res) => {
                 contact,
             });
             await user.save();
-            res.status(201).json({ message: "User registered successfully" });
+            res.status(httpStatusCodes.CREATED).json({
+                message: "User registered successfully",
+            });
         }
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(httpStatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: error.message,
+        });
     }
 };
 
@@ -38,14 +43,18 @@ export const signIn = async (req, res) => {
         const { email, password } = req.body;
         const user = await User.findOne({ email }).exec();
         if (!user) {
-            return res.status(400).json({ error: "User not found" });
+            return res
+                .status(httpStatusCodes.BAD_REQUEST)
+                .json({ message: "User not found" });
         }
         const isPasswordValid = await comparePassword(password, user.password);
         if (!isPasswordValid) {
-            return res.status(400).json({ error: "Invalid password" });
+            return res
+                .status(httpStatusCodes.UNAUTHORIZED)
+                .json({ message: "Invalid password" });
         }
         const token = generateToken(user);
-        res.status(200).json({
+        res.status(httpStatusCodes.OK).json({
             token: token,
             userInfo: {
                 firstName: user.firstName,
@@ -54,9 +63,12 @@ export const signIn = async (req, res) => {
                 organization: user.organization,
                 contact: user.contact,
             },
+            message: "User logged in successfully",
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(httpStatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: error.message,
+        });
     }
 };
 
@@ -68,10 +80,12 @@ export const refresh = async (req, res) => {
             const userObjectId = new ObjectId(userObjectIdString);
             const user = await User.findById(userObjectId).exec();
             if (!user) {
-                return res.status(400).json({ error: "User not found" });
+                return res
+                    .status(httpStatusCodes.BAD_REQUEST)
+                    .json({ message: "User not found" });
             }
             const token = generateToken(user);
-            res.status(200).json({
+            res.status(httpStatusCodes.OK).json({
                 token: token,
                 userInfo: {
                     firstName: user.firstName,
@@ -80,12 +94,17 @@ export const refresh = async (req, res) => {
                     organization: user.organization,
                     contact: user.contact,
                 },
+                message: "Token refreshed successfully",
             });
         } else {
-            return res.status(400).json({ error: "Invalid user objectId" });
+            return res
+                .status(httpStatusCodes.FORBIDDEN)
+                .json({ message: "Invalid token" });
         }
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(httpStatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: error.message,
+        });
     }
 };
 
@@ -96,7 +115,9 @@ export const updateProfile = async (req, res) => {
         const user = await User.findOne({ email }).exec();
 
         if (!user) {
-            return res.status(400).json({ error: "User not found" });
+            return res
+                .status(httpStatusCodes.BAD_REQUEST)
+                .json({ message: "User not found" });
         }
 
         user.firstName = firstName || user.firstName;
@@ -105,15 +126,20 @@ export const updateProfile = async (req, res) => {
 
         await user.save();
 
-        res.status(201).json({
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-            organization: user.organization,
-            contact: user.contact,
+        res.status(httpStatusCodes.OK).json({
+            userInfo: {
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                organization: user.organization,
+                contact: user.contact,
+            },
+            message: "Updated profile successfully",
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(httpStatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: error.message,
+        });
     }
 };
 
@@ -123,20 +149,28 @@ export const updatePassword = async (req, res) => {
 
         const user = await User.findOne({ email }).exec();
         if (!user) {
-            return res.status(400).json({ error: "User not found" });
+            return res
+                .status(httpStatusCodes.BAD_REQUEST)
+                .json({ message: "User not found" });
         }
 
         const isPasswordValid = await comparePassword(password, user.password);
         if (!isPasswordValid) {
-            return res.status(400).json({ error: "Invalid password" });
+            return res
+                .status(httpStatusCodes.FORBIDDEN)
+                .json({ message: "Invalid password" });
         }
 
         user.password = await hashPassword(newPassword);
 
         await user.save();
 
-        res.status(200).json({ message: "Password updated successfully" });
+        res.status(httpStatusCodes.OK).json({
+            message: "Password updated successfully",
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(httpStatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: error.message,
+        });
     }
 };

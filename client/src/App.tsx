@@ -17,14 +17,7 @@ const App: React.FC = () => {
     const dispatch = useDispatch() as any;
 
     useEffect(() => {
-        console.log("Calling refresh token use effect");
-        dispatch(refresh())
-            .then(() => {
-                console.log("Token refreshed successfully");
-            })
-            .catch((error: any) => {
-                console.error("Error while refreshing token:", error);
-            });
+        dispatch(refresh());
     }, [dispatch]);
     return (
         <Router>

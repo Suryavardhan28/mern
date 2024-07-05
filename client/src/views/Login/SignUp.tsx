@@ -37,6 +37,7 @@ const SignUp: React.FC = () => {
     const { t } = useTranslation();
     const theme = useTheme();
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
     const navigate = useNavigate();
     const dispatch = useDispatch() as any;
     const formik = useFormik({
@@ -51,15 +52,14 @@ const SignUp: React.FC = () => {
         validationSchema: validationSchema,
         onSubmit: async (values: SignUpFormValues) => {
             setLoading(true);
-            dispatch(signUp(values))
-                .then(() => {
-                    setLoading(false);
-                    navigate("/");
-                })
-                .catch((error: any) => {
-                    setLoading(false);
-                    console.error("Error signing up user:", error);
-                });
+            try {
+                await dispatch(signUp(values));
+                navigate("/");
+            } catch (error: any) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
         },
     });
 
@@ -222,6 +222,16 @@ const SignUp: React.FC = () => {
                         >
                             <Typography>{t("login.button")}</Typography>
                         </LoadingButton>
+                        {error && (
+                            <Typography
+                                textAlign="center"
+                                fontSize="15px"
+                                color={theme.palette.error.main}
+                                margin="10px"
+                            >
+                                {error}
+                            </Typography>
+                        )}
                     </form>
                     <Typography textAlign="center">
                         {t("login.signUp.existingAccount")}

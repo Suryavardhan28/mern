@@ -3,14 +3,9 @@ import {
     PasswordUpdateValues,
     ProfileUpdateValues,
 } from "../../components/user/utils";
-import { localStorageItemKey, refreshIntervalTime } from "../../config";
+import { localStorageItemKey, refreshIntervalTime } from "../../config/config";
 import { SignInFormValues, SignUpFormValues } from "../../views/login/utils";
 import { USER_INFO_ADD, USER_INFO_REMOVE } from "./actionTypes";
-
-export interface UserInfoToken {
-    token: string;
-    userInfo: UserInfo;
-}
 
 export interface UserInfo {
     firstName: string;
@@ -49,47 +44,51 @@ export const logout = (): AuthActionTypes => {
 };
 
 export const login = (loginInfo: SignInFormValues) => async (dispatch: any) => {
-    const response = await axiosInstance.post("/api/user/signin", loginInfo);
-    if (response.status === 200) {
-        const userInfoWithToken: UserInfoToken = response.data;
-        dispatch(addUserInfo(userInfoWithToken.userInfo));
-        localStorage.setItem(localStorageItemKey, userInfoWithToken.token);
+    try {
+        const response = await axiosInstance.post(
+            "/api/user/signin",
+            loginInfo
+        );
+        const userInfo: UserInfo = response.data;
+        dispatch(addUserInfo(userInfo));
         clearTimeout(refreshTimer as NodeJS.Timeout);
-        refreshTimer = setInterval(
+        refreshTimer = setTimeout(
             () => dispatch(refresh()),
             refreshIntervalTime
         );
-    } else {
-        dispatch(logout());
+        console.log(response.data.message);
+    } catch (error: any) {
+        console.error(error.data.message);
+        throw new Error(error.data.message);
     }
 };
 
 export const refresh = () => async (dispatch: any) => {
-    const response = await axiosInstance.get("/api/user/refresh");
-    if (response.status === 200) {
-        const userInfoWithToken: UserInfoToken = response.data;
-        dispatch(addUserInfo(userInfoWithToken.userInfo));
-        localStorage.setItem(localStorageItemKey, userInfoWithToken.token);
+    try {
+        const response = await axiosInstance.get("/api/user/refresh");
+
+        const userInfo: UserInfo = response.data;
+        dispatch(addUserInfo(userInfo));
         clearTimeout(refreshTimer as NodeJS.Timeout);
-        refreshTimer = setInterval(
+        refreshTimer = setTimeout(
             () => dispatch(refresh()),
             refreshIntervalTime
         );
-    } else if (response.status === 400) {
-        console.log("User not found");
-        dispatch(logout());
-    } else {
-        console.log("Error refreshing data");
+        console.log(response.data.message);
+    } catch (error: any) {
+        console.error(error.data.message);
         dispatch(logout());
     }
 };
 
 export const signUp = (userData: SignUpFormValues) => async () => {
-    const response = await axiosInstance.post("/api/user/signup", userData);
-    if (response.status === 201) {
-        console.log(response.data);
-    } else {
-        console.log("Signup failed");
+    try {
+        const response = await axiosInstance.post("/api/user/signup", userData);
+
+        console.log(response.data.message);
+    } catch (error: any) {
+        console.error(error.data.message);
+        throw new Error(error.data.message);
     }
 };
 
@@ -100,16 +99,11 @@ export const updateProfile =
                 "/api/user/profile",
                 updateProfileData
             );
-            if (response.status === 201) {
-                const userData: UserInfo = response.data;
-                dispatch(addUserInfo(userData));
-            } else {
-                console.error(
-                    "Error retrieving user details from local storage"
-                );
-            }
-        } catch (error) {
-            console.error("Update failed", error);
+            const userData: UserInfo = response.data.userInfo;
+            dispatch(addUserInfo(userData));
+            console.log(response.data.message);
+        } catch (error: any) {
+            console.error(error.data.message);
         }
     };
 
@@ -120,10 +114,8 @@ export const updatePassword =
                 "/api/user/password",
                 updatePasswordData
             );
-            if (response.status === 200) {
-                console.log("Updated password successfully");
-            }
-        } catch (error) {
-            console.log("UpdateFailed");
+            console.log(response.data.message);
+        } catch (error: any) {
+            console.error(error.data.message);
         }
     };

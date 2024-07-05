@@ -3,7 +3,7 @@ import {
     PasswordUpdateValues,
     ProfileUpdateValues,
 } from "../../components/user/utils";
-import { localStorageItemKey } from "../../config";
+import { localStorageItemKey, refreshIntervalTime } from "../../config";
 import { SignInFormValues, SignUpFormValues } from "../../views/login/utils";
 import { USER_INFO_ADD, USER_INFO_REMOVE } from "./actionTypes";
 
@@ -31,6 +31,8 @@ interface UserInfoRemoveAction {
 
 export type AuthActionTypes = UserInfoAddAction | UserInfoRemoveAction;
 
+let refreshTimer: number | NodeJS.Timeout;
+
 export const addUserInfo = (userInfo: UserInfo): AuthActionTypes => {
     return {
         type: USER_INFO_ADD,
@@ -40,6 +42,7 @@ export const addUserInfo = (userInfo: UserInfo): AuthActionTypes => {
 
 export const logout = (): AuthActionTypes => {
     localStorage.removeItem(localStorageItemKey);
+    clearTimeout(refreshTimer as NodeJS.Timeout);
     return {
         type: USER_INFO_REMOVE,
     };
@@ -51,6 +54,11 @@ export const login = (loginInfo: SignInFormValues) => async (dispatch: any) => {
         const userInfoWithToken: UserInfoToken = response.data;
         dispatch(addUserInfo(userInfoWithToken.userInfo));
         localStorage.setItem(localStorageItemKey, userInfoWithToken.token);
+        clearTimeout(refreshTimer as NodeJS.Timeout);
+        refreshTimer = setInterval(
+            () => dispatch(refresh()),
+            refreshIntervalTime
+        );
     } else {
         dispatch(logout());
     }
@@ -62,6 +70,11 @@ export const refresh = () => async (dispatch: any) => {
         const userInfoWithToken: UserInfoToken = response.data;
         dispatch(addUserInfo(userInfoWithToken.userInfo));
         localStorage.setItem(localStorageItemKey, userInfoWithToken.token);
+        clearTimeout(refreshTimer as NodeJS.Timeout);
+        refreshTimer = setInterval(
+            () => dispatch(refresh()),
+            refreshIntervalTime
+        );
     } else if (response.status === 400) {
         console.log("User not found");
         dispatch(logout());

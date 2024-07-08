@@ -23,7 +23,8 @@ axiosInstance.interceptors.response.use(
     (response) => {
         if (response.data.token) {
             localStorage.setItem(localStorageItemKey, response.data.token);
-            return response.data.userInfo;
+            const { token, ...dataWithoutToken } = response.data;
+            return { ...response, data: dataWithoutToken };
         }
         return response;
     },

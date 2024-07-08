@@ -49,7 +49,7 @@ export const login = (loginInfo: SignInFormValues) => async (dispatch: any) => {
             "/api/user/signin",
             loginInfo
         );
-        const userInfo: UserInfo = response.data;
+        const userInfo: UserInfo = response.data.userInfo;
         dispatch(addUserInfo(userInfo));
         clearTimeout(refreshTimer as NodeJS.Timeout);
         refreshTimer = setTimeout(
@@ -66,8 +66,7 @@ export const login = (loginInfo: SignInFormValues) => async (dispatch: any) => {
 export const refresh = () => async (dispatch: any) => {
     try {
         const response = await axiosInstance.get("/api/user/refresh");
-
-        const userInfo: UserInfo = response.data;
+        const userInfo: UserInfo = response.data.userInfo;
         dispatch(addUserInfo(userInfo));
         clearTimeout(refreshTimer as NodeJS.Timeout);
         refreshTimer = setTimeout(

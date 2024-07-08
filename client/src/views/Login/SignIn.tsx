@@ -43,7 +43,7 @@ const SignIn: React.FC = () => {
             setLoading(true);
             try {
                 await dispatch(login(values));
-                navigate("/");
+                navigate("/home");
             } catch (error: any) {
                 setError(error.message);
             } finally {
